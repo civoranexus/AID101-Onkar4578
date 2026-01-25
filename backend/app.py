@@ -2,10 +2,11 @@ from flask import Flask, request, jsonify
 from flask_mysqldb import MySQL
 import config
 import pickle
+from ai_models.irrigation_model import recommend_irrigation
+
 
 app = Flask(__name__)
 
-# ---------------- DB CONFIG ----------------
 app.config['MYSQL_HOST'] = config.MYSQL_HOST
 app.config['MYSQL_USER'] = config.MYSQL_USER
 app.config['MYSQL_PASSWORD'] = config.MYSQL_PASSWORD
@@ -13,15 +14,12 @@ app.config['MYSQL_DB'] = config.MYSQL_DB
 
 mysql = MySQL(app)
 
-# ---------------- LOAD AI MODEL (TOP LEVEL) ----------------
 yield_model = pickle.load(open('ai_models/yield_model.pkl', 'rb'))
 
-# ---------------- HOME ----------------
 @app.route('/')
 def home():
     return "AgriAssist AI Backend Running Successfully"
 
-# ---------------- ADD FARMER ----------------
 @app.route('/add-farmer', methods=['POST'])
 def add_farmer():
     data = request.get_json()
@@ -40,7 +38,6 @@ def add_farmer():
 
     return jsonify({"status": "Farmer Added Successfully"})
 
-# ---------------- VIEW FARMERS ----------------
 @app.route('/farmers', methods=['GET'])
 def get_farmers():
     cur = mysql.connection.cursor()
@@ -59,7 +56,7 @@ def get_farmers():
 
     return jsonify(farmers)
 
-# ---------------- DELETE FARMER ----------------
+
 @app.route('/delete-farmer/<int:id>', methods=['DELETE'])
 def delete_farmer(id):
     cur = mysql.connection.cursor()
@@ -87,6 +84,25 @@ def predict_yield():
         "predicted_yield_kg_per_acre": round(prediction[0], 2),
         "explanation": "Prediction based on rainfall, temperature, and soil quality"
     })
+
+@app.route('/irrigation-advice', methods=['POST'])
+def irrigation_advice():
+    data = request.get_json()
+
+    rainfall = data['rainfall']
+    temperature = data['temperature']
+    soil_moisture = data['soil_moisture']
+    crop_stage = data['crop_stage']
+
+    result = recommend_irrigation(
+        rainfall,
+        temperature,
+        soil_moisture,
+        crop_stage
+    )
+
+    return jsonify(result)
+
 
 # ---------------- RUN SERVER ----------------
 if __name__ == "__main__":
