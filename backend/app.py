@@ -3,6 +3,8 @@ from flask_mysqldb import MySQL
 import config
 import pickle
 from ai_models.irrigation_model import recommend_irrigation
+from ai_models.fertilizer_model import recommend_fertilizer
+
 
 
 app = Flask(__name__)
@@ -66,7 +68,6 @@ def delete_farmer(id):
 
     return jsonify({"status": "Farmer Deleted Successfully"})
 
-# ---------------- YIELD PREDICTION ----------------
 @app.route('/predict-yield', methods=['POST'])
 def predict_yield():
     data = request.json
@@ -103,7 +104,28 @@ def irrigation_advice():
 
     return jsonify(result)
 
+@app.route('/fertilizer-advice', methods=['POST'])
+def fertilizer_advice():
+    data = request.get_json()
 
-# ---------------- RUN SERVER ----------------
+    soil_type = data['soil_type']
+    crop_stage = data['crop_stage']
+    nitrogen = data['nitrogen']
+    phosphorus = data['phosphorus']
+    potassium = data['potassium']
+
+    result = recommend_fertilizer(
+        soil_type,
+        crop_stage,
+        nitrogen,
+        phosphorus,
+        potassium
+    )
+
+    return jsonify(result)
+
+
+
+# RUN SERVER 
 if __name__ == "__main__":
     app.run(debug=True)

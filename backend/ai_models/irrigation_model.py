@@ -1,7 +1,5 @@
 def recommend_irrigation(rainfall, temperature, soil_moisture, crop_stage):
-    """
-    Simple explainable AI logic for irrigation recommendation
-    """
+   
 
     water_needed = 0
     explanation = []
