@@ -124,6 +124,56 @@ def fertilizer_advice():
 
     return jsonify(result)
 
+def generate_alert(task_type, message):
+    cur = mysql.connection.cursor()
+    cur.execute(
+        "INSERT INTO farm_tasks (task_type, description) VALUES (%s, %s)",
+        (task_type, message)
+    )
+    mysql.connection.commit()
+    cur.close()
+
+@app.route('/create-alert', methods=['POST'])
+def create_alert():
+    data = request.get_json()
+    task_type = data['task_type']
+    message = data['message']
+
+    generate_alert(task_type, message)
+
+    return jsonify({"status": "Alert created successfully"})
+
+@app.route('/tasks', methods=['GET'])
+def view_tasks():
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM farm_tasks")
+    data = cur.fetchall()
+    cur.close()
+
+    tasks = []
+    for row in data:
+        tasks.append({
+            "id": row[0],
+            "task_type": row[1],
+            "description": row[2],
+            "status": row[3],
+            "created_at": row[4]
+        })
+
+    return jsonify(tasks)
+
+@app.route('/update-task/<int:id>', methods=['PUT'])
+def update_task(id):
+    cur = mysql.connection.cursor()
+    cur.execute(
+        "UPDATE farm_tasks SET status='COMPLETED' WHERE id=%s",
+        [id]
+    )
+    mysql.connection.commit()
+    cur.close()
+
+    return jsonify({"status": "Task marked as completed"})
+
 
 
 # RUN SERVER 

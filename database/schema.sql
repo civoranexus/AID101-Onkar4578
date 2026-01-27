@@ -1,2 +1,9 @@
 CREATE DATABASE IF NOT EXISTS agriassist;
 USE agriassist;
+CREATE TABLE IF NOT EXISTS farm_tasks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    task_type VARCHAR(50),
+    description VARCHAR(255),
+    status VARCHAR(20) DEFAULT 'PENDING',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
