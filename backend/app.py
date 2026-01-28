@@ -4,6 +4,8 @@ import config
 import pickle
 from ai_models.irrigation_model import recommend_irrigation
 from ai_models.fertilizer_model import recommend_fertilizer
+from ai_models.market_model import market_advisory
+
 
 
 
@@ -173,6 +175,23 @@ def update_task(id):
     cur.close()
 
     return jsonify({"status": "Task marked as completed"})
+
+@app.route('/market-insight', methods=['POST'])
+def market_insight():
+    data = request.get_json()
+
+    current_price = data['current_price']
+    avg_price = data['avg_price']
+    demand_index = data['demand_index']
+
+    result = market_advisory(
+        current_price,
+        avg_price,
+        demand_index
+    )
+
+    return jsonify(result)
+
 
 
 
